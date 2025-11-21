@@ -4,16 +4,23 @@ import pandas as pd
 import json
 import streamlit.components.v1 as components
 
+from supabase import create_client, Client
 
-st.set_page_config(page_title="Calendario PRO", layout="wide")
+@st.cache_resource
+def init_supabase():
+    url = st.secrets["supabase_url"]
+    key = st.secrets["supabase_key"]
+    return create_client(url, key)
 
+supabase: Client = init_supabase()
+
+
+st.set_page_config(page_title="Calendario", layout="wide")
 st.title("📆 Calendario de disponibilidad")
 
 
 
 # LECUTRA DE DATA REAL
-
-
 def cargar_eventos():
     response = supabase.table("eventos").select("*").order("fecha").execute()
     data = response.data
@@ -202,4 +209,5 @@ body {{
 
 
 components.html(html_code, height=3200)
+
 
