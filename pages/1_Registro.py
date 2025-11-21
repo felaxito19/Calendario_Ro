@@ -1,40 +1,29 @@
 import streamlit as st
 from datetime import date, timedelta
-import sqlite3
-import os
+from supabase import create_client, Client
 
+# ============================================================
+# CONECTAR A SUPABASE
+# ============================================================
+@st.cache_resource
+def init_supabase():
+    url = st.secrets["supabase_url"]
+    key = st.secrets["supabase_key"]
+    return create_client(url, key)
 
-# Crear carpeta data si no existe
-os.makedirs("data", exist_ok=True)
+supabase: Client = init_supabase()
 
-# Inicializar DB
-def init_db():
-    conn = sqlite3.connect("data/calendario.db")
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS eventos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            persona TEXT,
-            cliente TEXT,
-            fecha TEXT,
-            tipo TEXT,
-            creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    """)
-    conn.commit()
-    conn.close()
-
-init_db()
-
+# ============================================================
+# GUARDAR EVENTO EN SUPABASE
+# ============================================================
 def guardar_evento(persona, cliente, fecha, tipo):
-    conn = sqlite3.connect("data/calendario.db")
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO eventos (persona, cliente, fecha, tipo)
-        VALUES (?, ?, ?, ?)
-    """, (persona, cliente, fecha, tipo))
-    conn.commit()
-    conn.close()
+    data = {
+        "persona": persona,
+        "cliente": cliente,
+        "fecha": fecha,
+        "tipo": tipo
+    }
+    supabase.table("eventos").insert(data).execute()
 
 
 # ============================================================
@@ -75,7 +64,7 @@ if st.button("💾 Guardar"):
         guardar_evento(persona, cliente, dia.isoformat(), tipo)
 
     st.session_state.post_guardado = True
-    st.rerun()   # ÚNICO método válido ahora
+    st.rerun()   # recargar UI
 
 
 # ============================================================
