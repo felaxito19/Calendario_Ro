@@ -87,7 +87,7 @@ if st.button("💾 Guardar"):
 
     for i in range(delta.days + 1):
         dia = inicio + timedelta(days=i)
-        guardar_evento(persona, cliente, dia.isoformat(), tipo)
+        guardar_evento(persona, cliente, dia.isoformat())
 
     st.session_state.post_guardado = True
     st.rerun()
@@ -123,6 +123,7 @@ if st.session_state.post_guardado:
         if st.button("🚪 Salir"):
             st.write("Gracias por registrar la disponibilidad.")
             st.stop()
+
 
 
 
