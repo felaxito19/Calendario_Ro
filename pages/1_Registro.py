@@ -72,6 +72,13 @@ cliente = st.selectbox("🏢 Cliente", CLIENTES, key="cliente_input",
 # Selección de rango
 rango = st.date_input("📅 Seleccionar rango de fechas", [])
 
+if not isinstance(rango, tuple) or len(rango) != 2:
+    st.error("Por favor selecciona un rango de dos fechas.")
+    st.stop()
+
+inicio, fin = rango
+
+
 if st.button("💾 Guardar"):
 
     # caso SOLO un día
@@ -121,5 +128,6 @@ if st.session_state.post_guardado:
         if st.button("🚪 Salir"):
             st.write("Gracias por registrar la disponibilidad.")
             st.stop()
+
 
 
