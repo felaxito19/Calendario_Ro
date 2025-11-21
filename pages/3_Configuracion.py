@@ -3,8 +3,6 @@ from supabase import create_client, Client
 
 st.title("⚙️ Configuración del sistema")
 
-st.write("URL:", st.secrets.get("supabase_url", "NO HAY URL"))
-st.write("KEY:", st.secrets.get("supabase_key", "NO HAY KEY"))
 
 
 # ============================================================
@@ -18,11 +16,6 @@ def init_supabase():
 
 supabase: Client = init_supabase()
 
-try:
-    test = supabase.table("catalogo_personas").select("*").execute()
-    st.write("TEST OK:", test)
-except Exception as e:
-    st.error(f"ERROR DE SUPABASE: {e}")
 
 
 # ============================================================
