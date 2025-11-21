@@ -7,7 +7,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Calendario PRO", layout="wide")
 
-st.title("📆 Calendario FullCalendar PRO – Multi Meses")
+st.title("📆 Calendario de disponibilidad")
 
 
 
@@ -15,14 +15,12 @@ st.title("📆 Calendario FullCalendar PRO – Multi Meses")
 
 
 def cargar_eventos():
-    conn = sqlite3.connect("data/calendario.db")
-    df = pd.read_sql_query("""
-        SELECT persona, cliente, fecha, tipo 
-        FROM eventos
-        ORDER BY fecha
-    """, conn)
-    conn.close()
-    return df
+    response = supabase.table("eventos").select("*").order("fecha").execute()
+    data = response.data
+    if not data:
+        return pd.DataFrame(columns=["persona", "cliente", "fecha", "tipo"])
+    return pd.DataFrame(data)
+
 
 df = cargar_eventos()
 
@@ -204,3 +202,4 @@ body {{
 
 
 components.html(html_code, height=3200)
+
