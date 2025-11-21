@@ -75,7 +75,7 @@ if st.button("➕ Agregar cliente"):
 # ============================================================
 # 3. BORRAR TODOS LOS REGISTROS
 # ============================================================
-st.subheader("🗑 Borrar todos los registros de disponibilidad")
+st.subheader("🗑 Borrar todos los registros del calendario")
 
 if "confirm_delete" not in st.session_state:
     st.session_state.confirm_delete = False
