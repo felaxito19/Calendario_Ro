@@ -13,6 +13,20 @@ def init_supabase():
 
 supabase: Client = init_supabase()
 
+#==============================================================
+# CARGAMOS INFORMACIÓN NECESARIA - (funciones)
+#==============================================================
+
+def cargar_personas():
+    resp = supabase.table("catalogo_personas").select("nombre").execute()
+    data = resp.data or []
+    return [row["nombre"] for row in data]
+
+def cargar_clientes():
+    resp = supabase.table("catalogo_clientes").select("nombre").execute()
+    data = resp.data or []
+    return [row["nombre"] for row in data]
+
 # ============================================================
 # GUARDAR EVENTO EN SUPABASE
 # ============================================================
@@ -25,47 +39,54 @@ def guardar_evento(persona, cliente, fecha, tipo):
     }
     supabase.table("BD_calendario_disponibilidad").insert(data).execute()
 
-
 # ============================================================
 # ESTADO GLOBAL PARA SABER SI SE GUARDÓ
 # ============================================================
 if "post_guardado" not in st.session_state:
     st.session_state.post_guardado = False
 
-
 # ============================================================
 # UI PRINCIPAL (FORMULARIO)
 # ============================================================
 st.title("📆 Registrar disponibilidad")
 
-PERSONAS = ["Ana", "Carlos", "Luis", "Valeria", "Camila", "Royina", "Gerson", "Marco"]
-CLIENTES = ["Antamina", "Las Bambas", "Cerro Verde", "Hudbay", "Quellaveco", "Antapaccay", "Southern Perú"]
+PERSONAS = cargar_personas()
+CLIENTES = cargar_clientes()
 
+# Ingreso de información del periodo de tiempo
 persona = st.selectbox("👤 Nombre del empleado", PERSONAS)
 cliente = st.selectbox("🏢 Cliente", CLIENTES)
-tipo = st.text_input("📝 Tipo de actividad (opcional)")
 
 # Selección de rango
 rango = st.date_input("📅 Seleccionar rango de fechas", [])
 
 if st.button("💾 Guardar"):
 
-    # caso SOLO un día
+    # caso SOLO un día (date)
     if isinstance(rango, date):
-        st.error("Por favor selecciona un rango de dos fechas.")
-        st.stop()
+        guardar_evento(persona, cliente, rango.isoformat(), tipo)
+        st.session_state.post_guardado = True
+        st.rerun()
 
-    # caso rango válido (tupla con 2 fechas)
-    inicio, fin = rango
-    delta = fin - inicio
+    # caso rango (tuple)
+    elif isinstance(rango, tuple) and len(rango) == 2:
+        inicio, fin = rango
 
-    for i in range(delta.days + 1):
-        dia = inicio + timedelta(days=i)
-        guardar_evento(persona, cliente, dia.isoformat(), tipo)
+        # si el usuario pone fin < inicio, no guardar
+        if fin < inicio:
+            st.error("La fecha final no puede ser menor que la inicial.")
+            st.stop()
 
-    st.session_state.post_guardado = True
-    st.rerun()   # recargar UI
+        delta = fin - inicio
+        for i in range(delta.days + 1):
+            dia = inicio + timedelta(days=i)
+            guardar_evento(persona, cliente, dia.isoformat(), tipo)
 
+        st.session_state.post_guardado = True
+        st.rerun()
+
+    else:
+        st.error("Selecciona una fecha o un rango válido.")
 
 # ============================================================
 # MENSAJE DE ÉXITO (DEBAJO DEL FORMULARIO)
@@ -76,15 +97,38 @@ if st.session_state.post_guardado:
 
     st.write("¿Qué deseas hacer ahora?")
 
+    # Una vez guardado el registro:
+    if "default_persona" not in st.session_state:
+    st.session_state.default_persona = PERSONAS[0]
+
+    if "default_cliente" not in st.session_state:
+        st.session_state.default_cliente = CLIENTES[0]
+    
+    if "default_rango" not in st.session_state:
+        st.session_state.default_rango = date.today()
+
+    persona = st.selectbox("Persona:", PERSONAS, key="persona_input", index=PERSONAS.index(st.session_state.default_persona))
+    cliente = st.selectbox("Cliente:", CLIENTES, key="cliente_input", index=CLIENTES.index(st.session_state.default_cliente))
+    rango = st.date_input("Fecha o rango:", key="rango_input", value=st.session_state.default_rango)
+
+    
     col1, col2 = st.columns(2)
 
-    with col1:
-        if st.button("🔁 Agregar otra actividad"):
-            st.session_state.post_guardado = False
-            st.rerun()
+    if st.button("🔁 Agregar otra actividad"):
+        st.session_state.post_guardado = False
+    
+        # RESET de valores por defecto
+        st.session_state.default_persona = PERSONAS[0]
+        st.session_state.default_cliente = CLIENTES[0]
+        st.session_state.default_rango = date.today()
+    
+        # RESET de widgets (Streamlit los reconstruye fresh)
+        for key in ["persona_input", "cliente_input", "rango_input"]:
+            if key in st.session_state:
+                del st.session_state[key]
+    
+        st.rerun()
 
-    with col2:
-        if st.button("🚪 Salir"):
-            st.write("Gracias por registrar la disponibilidad.")
-            st.stop()
+
+
 
