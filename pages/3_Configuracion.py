@@ -3,6 +3,10 @@ from supabase import create_client, Client
 
 st.title("⚙️ Configuración del sistema")
 
+st.write("URL:", st.secrets.get("supabase_url", "NO HAY URL"))
+st.write("KEY:", st.secrets.get("supabase_key", "NO HAY KEY"))
+
+
 # ============================================================
 # CONECTAR A SUPABASE
 # ============================================================
