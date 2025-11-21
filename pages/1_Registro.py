@@ -23,7 +23,7 @@ def guardar_evento(persona, cliente, fecha, tipo):
         "fecha": fecha,
         "tipo": tipo
     }
-    supabase.table("eventos").insert(data).execute()
+    supabase.table("BD_calendario_disponibilidad").insert(data).execute()
 
 
 # ============================================================
@@ -87,3 +87,4 @@ if st.session_state.post_guardado:
         if st.button("🚪 Salir"):
             st.write("Gracias por registrar la disponibilidad.")
             st.stop()
+
