@@ -14,23 +14,10 @@ def init_supabase():
 
 supabase: Client = init_supabase()
 
-# ============================================================
-# 1. BORRAR TODOS LOS REGISTROS
-# ============================================================
-st.subheader("🗑 Borrar todos los registros de disponibilidad")
 
-if st.button("🛑 ELIMINAR TODOS LOS REGISTROS", type="primary"):
-    st.warning("¿Seguro? Esta acción NO se puede deshacer.")
-
-    if st.button("✔ Sí, borrar todo", type="secondary"):
-        supabase.table("BD_calendario_disponibilidad").delete().neq("id", 0).execute()
-        st.success("Todos los registros fueron eliminados correctamente.")
-
-
-st.markdown("---")
 
 # ============================================================
-# 2. EDITAR PERSONAS
+# 1. EDITAR PERSONAS
 # ============================================================
 st.subheader("👥 Editar lista de personas")
 
@@ -59,7 +46,7 @@ if st.button("➕ Agregar persona"):
 st.markdown("---")
 
 # ============================================================
-# 3. EDITAR CLIENTES
+# 2. EDITAR CLIENTES
 # ============================================================
 st.subheader("🏢 Editar lista de clientes")
 
@@ -81,3 +68,19 @@ if st.button("➕ Agregar cliente"):
         st.rerun()
     else:
         st.error("Ingrese un nombre válido.")
+
+
+# ============================================================
+# 3. BORRAR TODOS LOS REGISTROS
+# ============================================================
+st.subheader("🗑 Borrar todos los registros de disponibilidad")
+
+if st.button("🛑 ELIMINAR TODOS LOS REGISTROS", type="primary"):
+    st.warning("¿Seguro? Esta acción NO se puede deshacer.")
+
+    if st.button("✔ Sí, borrar todo", type="secondary"):
+        supabase.table("BD_calendario_disponibilidad").delete().neq("id", 0).execute()
+        st.success("Todos los registros fueron eliminados correctamente.")
+
+
+st.markdown("---")
