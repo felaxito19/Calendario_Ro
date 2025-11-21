@@ -22,7 +22,7 @@ st.title("📆 Calendario de disponibilidad")
 
 # LECUTRA DE DATA REAL
 def cargar_eventos():
-    response = supabase.table("eventos").select("*").order("fecha").execute()
+    response = supabase.table("BD_calendario_disponibilidad").select("*").order("fecha").execute()
     data = response.data
     if not data:
         return pd.DataFrame(columns=["persona", "cliente", "fecha", "tipo"])
@@ -209,5 +209,6 @@ body {{
 
 
 components.html(html_code, height=3200)
+
 
 
