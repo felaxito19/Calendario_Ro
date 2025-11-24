@@ -78,13 +78,13 @@ def generar_rangos(df):
 # ============================================================
 for cliente in CLIENTES:
 
-    st.subheader(f"🏢 {cliente}")
 
     df = cargar_rangos(persona_sel, cliente)
     rangos_df = generar_rangos(df)
 
+    st.subheader(f"🏢 {cliente}")
+    
     if rangos_df.empty:
-        st.info("No hay rangos registrados.")
         continue
 
     # Mostrar cada rango con su botón eliminar
