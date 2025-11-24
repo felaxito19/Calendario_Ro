@@ -70,6 +70,7 @@ def cargar_rangos(persona, cliente):
     df = pd.DataFrame(resp.data)
     return df
 
+
 def generar_rangos(df):
     if df.empty:
         return pd.DataFrame(columns=["inicio", "fin"])
@@ -93,31 +94,25 @@ def generar_rangos(df):
     return pd.DataFrame(rangos)
 
 
-rangos = cargar_rangos(persona_sel, "TODOS")
-rangos_general = generar_rangos(rangos)
-
-
-if not rangos_general.empty:
-
-    for cliente in CLIENTES:
-        rangos_df = generar_rangos(cargar_rangos(persona_sel,cliente))
-        rangos_df["label"] = rangos_df["inicio"].dt.date.astype(str) + " → " + rangos_df["fin"].dt.date.astype(str)
-        
-        rango_sel = st.selectbox("🗑️ Seleccionar rango a eliminar", rangos_df["label"])
-
-        if st.button("❌ Eliminar rango"):
-            inicio_str = rango_sel.split(" → ")[0]
-            fin_str = rango_sel.split(" → ")[1]
+for cliente in CLIENTES:
+    rangos_df = generar_rangos(cargar_rangos(persona_sel,cliente))
+    rangos_df["label"] = rangos_df["inicio"].dt.date.astype(str) + " → " + rangos_df["fin"].dt.date.astype(str)
     
-            # Borrar todas las fechas dentro del rango
-            supabase.table("BD_calendario_disponibilidad") \
-                .delete() \
-                .gte("fecha", inicio_str) \
-                .lte("fecha", fin_str) \
-                .execute()
-    
-            st.success("✅ Rango eliminado correctamente.")
-            st.rerun()
+    rango_sel = st.selectbox("🗑️ Seleccionar rango a eliminar", rangos_df["label"])
+
+    if st.button("❌ Eliminar rango"):
+        inicio_str = rango_sel.split(" → ")[0]
+        fin_str = rango_sel.split(" → ")[1]
+
+        # Borrar todas las fechas dentro del rango
+        supabase.table("BD_calendario_disponibilidad") \
+            .delete() \
+            .gte("fecha", inicio_str) \
+            .lte("fecha", fin_str) \
+            .execute()
+
+        st.success("✅ Rango eliminado correctamente.")
+        st.rerun()
 
 
 
