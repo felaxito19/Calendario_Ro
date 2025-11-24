@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import date, timedelta
 from supabase import create_client, Client
+import pandas as pd
 
 # ============================================================
 # CONECTAR A SUPABASE
