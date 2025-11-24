@@ -93,9 +93,19 @@ def generar_rangos(df):
     rangos.append({"inicio": inicio, "fin": fin})
     return pd.DataFrame(rangos)
 
+st.write("Debug:)
+
+
+rangos_df_debug = generar_rangos(cargar_rangos("TODOS","ANTAMINA"))
+
+st.dataframe(rangos_df_debug)
+
 
 for cliente in CLIENTES:
     rangos_df = generar_rangos(cargar_rangos(persona_sel,cliente))
+
+    st.dataframe(rangos_df)
+    
     rangos_df["label"] = rangos_df["inicio"].dt.date.astype(str) + " → " + rangos_df["fin"].dt.date.astype(str)
     
     rango_sel = st.selectbox("🗑️ Seleccionar rango a eliminar", rangos_df["label"])
