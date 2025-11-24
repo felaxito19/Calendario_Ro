@@ -77,7 +77,7 @@ for usuario, cliente, fecha in data:
 # RENDER
 # ------------------------------------------------------
 options = {
-    "initialView": "multiMonthYear",
+    "initialView": "dayGridMonth",
     "locale": "es",
     "height": "auto",
     "expandRows": True,
@@ -89,5 +89,6 @@ options = {
 }
 
 response = calendar(events=eventos, options=options)
+
 
 
