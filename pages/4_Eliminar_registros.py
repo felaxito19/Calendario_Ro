@@ -47,18 +47,12 @@ st.title("📆 Eliminar registros")
 
 # Personas y clientes con opción TODOS
 PERSONAS = ["TODOS"] + cargar_personas()
-CLIENTES = ["TODOS"] + cargar_clientes()
+CLIENTES = cargar_clientes()
 
 persona_sel = st.selectbox(
     "👤 Usuario",
     PERSONAS,
     key="persona_input"
-)
-
-cliente_sel = st.selectbox(
-    "⛏️ Unidad Minera",
-    CLIENTES,
-    key="cliente_input"
 )
 
 
@@ -99,30 +93,31 @@ def generar_rangos(df):
     return pd.DataFrame(rangos)
 
 
-rangos = cargar_rangos(persona_sel, cliente_sel)
-rangos_df = generar_rangos(rangos)
+rangos = cargar_rangos(persona_sel, "TODOS")
+rangos_general = generar_rangos(rangos)
 
 
+if not rangos_general.empty:
 
+    for cliente in CLIENTES:
+        rangos_df = generar_rangos(cargar_rangos(persona_sel,cliente)
+        rangos_df["label"] = rangos_df["inicio"].dt.date.astype(str) + " → " + rangos_df["fin"].dt.date.astype(str)
+        
+        rango_sel = st.selectbox("🗑️ Seleccionar rango a eliminar", rangos_df["label"])
 
-if not rangos_df.empty:
-    rangos_df["label"] = rangos_df["inicio"].dt.date.astype(str) + " → " + rangos_df["fin"].dt.date.astype(str)
-
-    rango_sel = st.selectbox("🗑️ Seleccionar rango a eliminar", rangos_df["label"])
-
-    if st.button("❌ Eliminar rango"):
-        inicio_str = rango_sel.split(" → ")[0]
-        fin_str = rango_sel.split(" → ")[1]
-
-        # Borrar todas las fechas dentro del rango
-        supabase.table("BD_calendario_disponibilidad") \
-            .delete() \
-            .gte("fecha", inicio_str) \
-            .lte("fecha", fin_str) \
-            .execute()
-
-        st.success("✅ Rango eliminado correctamente.")
-        st.rerun()
+        if st.button("❌ Eliminar rango"):
+            inicio_str = rango_sel.split(" → ")[0]
+            fin_str = rango_sel.split(" → ")[1]
+    
+            # Borrar todas las fechas dentro del rango
+            supabase.table("BD_calendario_disponibilidad") \
+                .delete() \
+                .gte("fecha", inicio_str) \
+                .lte("fecha", fin_str) \
+                .execute()
+    
+            st.success("✅ Rango eliminado correctamente.")
+            st.rerun()
 
 
 
