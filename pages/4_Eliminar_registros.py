@@ -100,7 +100,7 @@ rangos_general = generar_rangos(rangos)
 if not rangos_general.empty:
 
     for cliente in CLIENTES:
-        rangos_df = generar_rangos(cargar_rangos(persona_sel,cliente)
+        rangos_df = generar_rangos(cargar_rangos(persona_sel,cliente))
         rangos_df["label"] = rangos_df["inicio"].dt.date.astype(str) + " → " + rangos_df["fin"].dt.date.astype(str)
         
         rango_sel = st.selectbox("🗑️ Seleccionar rango a eliminar", rangos_df["label"])
