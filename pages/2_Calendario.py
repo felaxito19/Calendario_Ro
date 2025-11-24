@@ -15,7 +15,7 @@ def init_supabase():
 
 supabase: Client = init_supabase()
 
-st.set_page_config(page_title="Calendario", layout="wide")
+st.set_page_config(page_title="Calendario", layout="centered")
 st.title("📆 Calendario de disponibilidad")
 
 # ------------------------------------------------------
@@ -89,6 +89,7 @@ options = {
 }
 
 response = calendar(events=eventos, options=options)
+
 
 
 
