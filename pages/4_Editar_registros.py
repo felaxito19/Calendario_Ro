@@ -102,7 +102,7 @@ def generar_rangos(df):
 rangos = cargar_rangos(persona_sel, cliente_sel)
 rangos_df = generar_rangos(rangos)
 
-st.dataframe(rangos_humano, use_container_width=True)
+st.dataframe(rangos_df, use_container_width=True)
 
 
 if not rangos_df.empty:
