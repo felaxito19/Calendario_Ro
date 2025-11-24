@@ -45,88 +45,84 @@ if "default_rango" not in st.session_state:
 # ============================================================
 st.title("📆 Eliminar registros")
 
-PERSONAS = cargar_personas()
-CLIENTES = cargar_clientes()
+# Personas y clientes con opción TODOS
+PERSONAS = ["TODOS"] + cargar_personas()
+CLIENTES = ["TODOS"] + cargar_clientes()
 
-# Usar valores por defecto si existen
-persona_default = st.session_state.default_persona or PERSONAS[0]
-cliente_default = st.session_state.default_cliente or CLIENTES[0]
+persona_sel = st.selectbox(
+    "👤 Usuario",
+    PERSONAS,
+    key="persona_input"
+)
 
+cliente_sel = st.selectbox(
+    "⛏️ Unidad Minera",
+    CLIENTES,
+    key="cliente_input"
+)
 
-persona_sel = st.selectbox("👤 Usuario", PERSONAS, key="persona_input",
-                       index=PERSONAS.index(persona_default))
-
-cliente_sel = st.selectbox("⛏️ Unidad Minera", CLIENTES, key="cliente_input",
-                       index=CLIENTES.index(cliente_default))
 
 # Generemos una lista de rangos existentes
 def cargar_rangos(persona, cliente):
-  resp = supabase.table("BD_calendario_disponibilidad") \
-               .select("*") \
-               .eq("persona", persona) \
-               .eq("cliente", cliente) \
-               .execute()
-  df = pd.DataFrame(resp.data)
+    query = supabase.table("BD_calendario_disponibilidad").select("*")
 
-  return df
+    if persona != "TODOS":
+        query = query.eq("persona", persona)
+
+    if cliente != "TODOS":
+        query = query.eq("cliente", cliente)
+
+    resp = query.execute()
+    df = pd.DataFrame(resp.data)
+    return df
+
+def generar_rangos(df):
+    if df.empty:
+        return pd.DataFrame(columns=["inicio", "fin"])
+
+    df = df.sort_values("fecha")
+    df["fecha"] = pd.to_datetime(df["fecha"])
+
+    rangos = []
+    inicio = df["fecha"].iloc[0]
+    fin = inicio
+
+    for fecha in df["fecha"].iloc[1:]:
+        if fecha == fin + pd.Timedelta(days=1):
+            fin = fecha
+        else:
+            rangos.append({"inicio": inicio, "fin": fin})
+            inicio = fecha
+            fin = fecha
+
+    rangos.append({"inicio": inicio, "fin": fin})
+    return pd.DataFrame(rangos)
+
 
 rangos = cargar_rangos(persona_sel, cliente_sel)
+rangos_df = generar_rangos(rangos)
 
-st.dataframe(rangos, use_container_width=True)
-
-
-# Mostramos la lista peo esta vez de RANGOS 
+st.dataframe(rangos_humano, use_container_width=True)
 
 
-# --------------------
+if not rangos_df.empty:
+    rangos_df["label"] = rangos_df["inicio"].dt.date.astype(str) + " → " + rangos_df["fin"].dt.date.astype(str)
 
-if not st.session_state.post_guardado:
-    if st.button("💾 Guardar"):
-        
-        # caso SOLO un día
-        if isinstance(rango, date):
-            st.error("Por favor selecciona un rango de dos fechas.")
-            st.stop()
+    rango_sel = st.selectbox("🗑️ Seleccionar rango a eliminar", rangos_df["label"])
 
-        # caso rango válido
-        inicio, fin = rango
-        delta = fin - inicio
+    if st.button("❌ Eliminar rango"):
+        inicio_str = rango_sel.split(" → ")[0]
+        fin_str = rango_sel.split(" → ")[1]
 
-        for i in range(delta.days + 1):
-            dia = inicio + timedelta(days=i)
-            guardar_evento(persona, cliente, dia.isoformat())
+        # Borrar todas las fechas dentro del rango
+        supabase.table("BD_calendario_disponibilidad") \
+            .delete() \
+            .gte("fecha", inicio_str) \
+            .lte("fecha", fin_str) \
+            .execute()
 
-        st.session_state.post_guardado = True
+        st.success("✅ Rango eliminado correctamente.")
         st.rerun()
-
-
-
-# ============================================================
-# MENSAJE DE ÉXITO
-# ============================================================
-if st.session_state.post_guardado:
-
-    st.success("✔ Registro guardado correctamente.")
-    st.write("¿Qué deseas hacer ahora?")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.button("🔁 Agregar otra actividad"):
-
-            # Reset de defaults
-            st.session_state.default_persona = PERSONAS[0]
-            st.session_state.default_cliente = CLIENTES[0]
-            st.session_state.default_rango = date.today()
-
-            # Reset widgets
-            for k in ["persona_input", "cliente_input", "rango_input"]:
-                if k in st.session_state:
-                    del st.session_state[k]
-
-            st.session_state.post_guardado = False
-            st.rerun()
-
 
 
 
