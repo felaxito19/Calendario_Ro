@@ -2,4 +2,4 @@ supabase
 streamlit
 pandas
 streamlit_calendar
-
+openpyxl
